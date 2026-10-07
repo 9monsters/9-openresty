@@ -20,20 +20,23 @@ const menuItems = computed<MenuProps['items']>(() => {
   for (const r of mainRoute.children) {
     if (r.meta?.hidden) continue
     const path = r.path as string
+    const title = (r.meta?.title as string) || path
 
     if (path.startsWith('dashboard')) {
       if (path === 'dashboard') continue
       dashboardChildren.push({
         key: path,
-        label: h(RouterLink, { to: `/${path}` }, () => r.meta?.title as string),
+        label: () => h(RouterLink, { to: `/${path}` }, () => title),
       })
       continue
     }
 
+    // Top-level items: use onClick for navigation (nginx-ui pattern)
     mainItems.push({
       key: path,
-      icon: r.meta?.icon ? () => h('span', { class: r.meta.icon }) : undefined,
-      label: h(RouterLink, { to: `/${path}` }, () => r.meta?.title as string),
+      icon: r.meta?.icon ? () => h('span', { class: r.meta.icon as string }) : undefined,
+      label: title,
+      onClick: () => router.push(`/${path}`),
     })
   }
 
