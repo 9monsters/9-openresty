@@ -51,17 +51,15 @@ const menuItems = computed<MenuProps['items']>(() => {
   ]
 })
 
-function openSub(routePath: string) {
-  const pcs = routePath.replace(/^\//, '').split('/')
-  return pcs[0] || 'dashboard'
-}
+// Fully reactive: derived from route.path, no v-model conflict
+const selectedKeys = computed(() => {
+  const p = route.path.startsWith('/') ? route.path.slice(1) : route.path
+  return p.split('/')
+})
 
-const selectedKeys = ref<string[]>([openSub(route.path)])
-const openKeys = ref<string[]>([route.path.startsWith('/dashboard') ? 'dashboard' : ''])
+const openKeys = ref<string[]>(route.path.startsWith('/dashboard') ? ['dashboard'] : [])
 
 watch(() => route.path, (p) => {
-  const key = p.replace(/^\//, '').split('/')
-  selectedKeys.value = key
   if (p.startsWith('/dashboard')) {
     openKeys.value = ['dashboard']
   }
@@ -90,7 +88,7 @@ onMounted(async () => {
         <span v-if="!settings.sidebarCollapsed">OpenResty Admin</span>
       </div>
             <AMenu
-        v-model:selectedKeys="selectedKeys"
+        :selectedKeys="selectedKeys"
         v-model:openKeys="openKeys"
         theme="dark"
         mode="inline"
