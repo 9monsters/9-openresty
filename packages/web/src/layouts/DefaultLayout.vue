@@ -1,67 +1,66 @@
 <script setup lang="ts">
+import { h } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useSettingsStore } from '@/stores/settings'
 import { getNginxStatus } from '@/api/nginx'
+import type { MenuProps } from 'antdv-next'
 
 const router = useRouter()
 const route = useRoute()
 const settings = useSettingsStore()
 
-// Build menu from routes
-interface MenuItem {
-  key: string
-  label: string
-  icon?: string
-  children?: MenuItem[]
-}
-
-const menuItems = computed<MenuItem[]>(() => {
+// Build menu items with onClick callbacks (nginx-ui pattern)
+const menuItems = computed<MenuProps['items']>(() => {
   const mainRoute = router.options.routes.find(r => r.path === '/')
   if (!mainRoute?.children) return []
 
-  // Dashboard sub-items
-  const dashboardItems: MenuItem[] = []
-  const mainItems: MenuItem[] = []
+  const dashboardChildren: any[] = []
+  const mainItems: any[] = []
 
   for (const r of mainRoute.children) {
     if (r.meta?.hidden) continue
-
     const path = r.path as string
+
     if (path.startsWith('dashboard')) {
-      if (path === 'dashboard') continue // skip dashboard itself, use its children
-      dashboardItems.push({
+      if (path === 'dashboard') continue
+      dashboardChildren.push({
         key: path,
-        label: r.meta?.title as string || path,
+        label: h(RouterLink, { to: `/${path}` }, () => r.meta?.title as string),
       })
       continue
     }
 
     mainItems.push({
       key: path,
-      label: r.meta?.title as string || path,
-      icon: r.meta?.icon as string,
+      icon: r.meta?.icon ? () => h('span', { class: r.meta.icon }) : undefined,
+      label: h(RouterLink, { to: `/${path}` }, () => r.meta?.title as string),
     })
   }
 
-  // Insert Dashboard with sub-items at the top
   return [
     {
       key: 'dashboard',
+      icon: () => h('span', { class: 'i-tabler:dashboard' }),
       label: '仪表盘',
-      icon: 'i-tabler:dashboard',
-      children: dashboardItems,
+      children: dashboardChildren,
     },
     ...mainItems,
   ]
 })
 
-const selectedKeys = ref<string[]>([route.path.startsWith('/') ? route.path.slice(1) : route.path || 'dashboard'])
-const openKeys = ref<string[]>(route.path.startsWith('/dashboard') ? ['dashboard'] : [])
+function openSub(routePath: string) {
+  const pcs = routePath.replace(/^\//, '').split('/')
+  return pcs[0] || 'dashboard'
+}
+
+const selectedKeys = ref<string[]>([openSub(route.path)])
+const openKeys = ref<string[]>([route.path.startsWith('/dashboard') ? 'dashboard' : ''])
 
 watch(() => route.path, (p) => {
-  const normalized = p.startsWith('/') ? p.slice(1) : p
-  selectedKeys.value = [normalized]
-  if (normalized.startsWith('dashboard')) {
-    if (!openKeys.value.includes('dashboard')) openKeys.value = ['dashboard']
+  const key = p.replace(/^\//, '').split('/')
+  selectedKeys.value = key
+  if (p.startsWith('/dashboard')) {
+    openKeys.value = ['dashboard']
   }
 })
 
@@ -87,26 +86,13 @@ onMounted(async () => {
         <span class="i-tabler:brand-openai text-2xl" />
         <span v-if="!settings.sidebarCollapsed">OpenResty Admin</span>
       </div>
-      <AMenu
+            <AMenu
         v-model:selectedKeys="selectedKeys"
         v-model:openKeys="openKeys"
         theme="dark"
         mode="inline"
-        @click="({ key }) => router.push('/' + key)"
-      >
-        <template v-for="item in menuItems" :key="item.key">
-          <ASubMenu v-if="item.children && item.children.length > 0" :key="item.key" :title="item.label">
-            <template #icon><span :class="item.icon" /></template>
-            <AMenuItem v-for="child in item.children" :key="child.key">
-              {{ child.label }}
-            </AMenuItem>
-          </ASubMenu>
-          <AMenuItem v-else :key="item.key">
-            <template #icon><span :class="item.icon" /></template>
-            {{ item.label }}
-          </AMenuItem>
-        </template>
-      </AMenu>
+        :items="menuItems"
+      />
     </ALayoutSider>
 
     <!-- Main content -->
