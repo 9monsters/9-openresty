@@ -1,0 +1,12 @@
+{
+  "name": "openresty-admin",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "dev:server": "pnpm --filter @openresty-admin/server dev",
+    "dev:web": "pnpm --filter @openresty-admin/web dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint"
+  }
+}

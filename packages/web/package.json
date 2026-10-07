@@ -1,0 +1,41 @@
+{
+  "name": "@openresty-admin/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 3001",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.5.0",
+    "vue-router": "^4.4.0",
+    "pinia": "^2.2.0",
+    "antdv-next": "~1.5.6",
+    "@antdv-next/icons": "^1.1.2",
+    "@vueuse/core": "^11.0.0",
+    "dayjs": "^1.11.0",
+    "axios": "^1.7.0",
+    "splitpanes": "^3.1.0",
+    "@xterm/xterm": "^5.5.0",
+    "@xterm/addon-fit": "^0.10.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.0",
+    "vite": "^5.4.0",
+    "unocss": "^0.63.0",
+    "@unocss/preset-attributify": "^0.63.0",
+    "@unocss/preset-icons": "^0.63.0",
+    "@unocss/preset-uno": "^0.63.0",
+    "@unocss/preset-typography": "^0.63.0",
+    "@iconify-json/tabler": "^1.2.0",
+    "@unocss/transformer-directives": "^0.63.0",
+    "@unocss/transformer-variant-group": "^0.63.0",
+    "unplugin-auto-import": "^0.18.0",
+    "unplugin-vue-components": "^0.27.0",
+    "@antdv-next/auto-import-resolver": "^1.2.0",
+    "typescript": "^5.6.0",
+    "vue-tsc": "^2.1.0"
+  }
+}
