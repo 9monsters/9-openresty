@@ -13,6 +13,17 @@ import { logRoutes } from './routes/logs.js'
 import { nginxRoutes } from './routes/nginx.js'
 import { luaRoutes } from './routes/lua.js'
 import { settingsRoutes } from './routes/settings.js'
+import { terminalRoutes } from './routes/terminal.js'
+import { dnsRoutes } from './routes/dns.js'
+import { accessListRoutes } from './routes/access-lists.js'
+import { namespaceRoutes } from './routes/namespaces.js'
+import { nodeRoutes } from './routes/nodes.js'
+import { notificationRoutes } from './routes/notifications.js'
+import { backupRoutes as apiBackupRoutes } from './routes/backup.js'
+import { systemRoutes } from './routes/system.js'
+import { userRoutes } from './routes/users.js'
+import { snippetRoutes } from './routes/snippets.js'
+import { acmeRoutes } from './routes/acme.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -38,6 +49,17 @@ export async function createServer() {
   await app.register(logRoutes, { prefix: '/api' })
   await app.register(nginxRoutes, { prefix: '/api' })
   await app.register(luaRoutes, { prefix: '/api' })
+    await app.register(terminalRoutes, { prefix: '/api' })
+  await app.register(dnsRoutes, { prefix: '/api' })
+  await app.register(accessListRoutes, { prefix: '/api' })
+  await app.register(namespaceRoutes, { prefix: '/api' })
+  await app.register(nodeRoutes, { prefix: '/api' })
+  await app.register(notificationRoutes, { prefix: '/api' })
+  await app.register(apiBackupRoutes, { prefix: '/api' })
+  await app.register(systemRoutes, { prefix: '/api' })
+  await app.register(userRoutes, { prefix: '/api' })
+  await app.register(snippetRoutes, { prefix: '/api' })
+  await app.register(acmeRoutes, { prefix: '/api' })
   await app.register(settingsRoutes, { prefix: '/api' })
 
   // Serve built frontend in production

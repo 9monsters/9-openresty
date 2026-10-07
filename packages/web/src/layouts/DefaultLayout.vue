@@ -6,22 +6,63 @@ const router = useRouter()
 const route = useRoute()
 const settings = useSettingsStore()
 
-// Sidebar menu items
-const menuItems = computed(() => {
-  return router.options.routes
-    .find(r => r.path === '/')
-    ?.children
-    ?.filter(r => !r.meta?.hidden)
-    .map(r => ({
-      key: r.path,
-      label: r.meta?.title as string,
+// Build menu from routes
+interface MenuItem {
+  key: string
+  label: string
+  icon?: string
+  children?: MenuItem[]
+}
+
+const menuItems = computed<MenuItem[]>(() => {
+  const mainRoute = router.options.routes.find(r => r.path === '/')
+  if (!mainRoute?.children) return []
+
+  // Dashboard sub-items
+  const dashboardItems: MenuItem[] = []
+  const mainItems: MenuItem[] = []
+
+  for (const r of mainRoute.children) {
+    if (r.meta?.hidden) continue
+
+    const path = r.path as string
+    if (path.startsWith('dashboard')) {
+      if (path === 'dashboard') continue // skip dashboard itself, use its children
+      dashboardItems.push({
+        key: path,
+        label: r.meta?.title as string || path,
+      })
+      continue
+    }
+
+    mainItems.push({
+      key: path,
+      label: r.meta?.title as string || path,
       icon: r.meta?.icon as string,
-    })) || []
+    })
+  }
+
+  // Insert Dashboard with sub-items at the top
+  return [
+    {
+      key: 'dashboard',
+      label: '仪表盘',
+      icon: 'i-tabler:dashboard',
+      children: dashboardItems,
+    },
+    ...mainItems,
+  ]
 })
 
-const selectedKeys = computed(() => {
-  const path = route.path.startsWith('/') ? route.path.slice(1) : route.path
-  return [path.split('/')[0] || 'dashboard']
+const selectedKeys = ref<string[]>([route.path.startsWith('/') ? route.path.slice(1) : route.path || 'dashboard'])
+const openKeys = ref<string[]>(route.path.startsWith('/dashboard') ? ['dashboard'] : [])
+
+watch(() => route.path, (p) => {
+  const normalized = p.startsWith('/') ? p.slice(1) : p
+  selectedKeys.value = [normalized]
+  if (normalized.startsWith('dashboard')) {
+    if (!openKeys.value.includes('dashboard')) openKeys.value = ['dashboard']
+  }
 })
 
 // Fetch nginx status
@@ -48,16 +89,23 @@ onMounted(async () => {
       </div>
       <AMenu
         v-model:selectedKeys="selectedKeys"
+        v-model:openKeys="openKeys"
         theme="dark"
         mode="inline"
         @click="({ key }) => router.push('/' + key)"
       >
-        <AMenuItem v-for="item in menuItems" :key="item.key">
-          <template #icon>
-            <span :class="item.icon" />
-          </template>
-          {{ item.label }}
-        </AMenuItem>
+        <template v-for="item in menuItems" :key="item.key">
+          <ASubMenu v-if="item.children && item.children.length > 0" :key="item.key" :title="item.label">
+            <template #icon><span :class="item.icon" /></template>
+            <AMenuItem v-for="child in item.children" :key="child.key">
+              {{ child.label }}
+            </AMenuItem>
+          </ASubMenu>
+          <AMenuItem v-else :key="item.key">
+            <template #icon><span :class="item.icon" /></template>
+            {{ item.label }}
+          </AMenuItem>
+        </template>
       </AMenu>
     </ALayoutSider>
 
