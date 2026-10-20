@@ -30,9 +30,9 @@ async function handleDelete(site: ParsedSite) {
   try {
     await deleteSite(site.name)
     await fetchSites()
-    AMessage.success('站点已删除')
+    message.success('站点已删除')
   } catch (e) {
-    AMessage.error('删除失败')
+    message.error('删除失败')
   }
 }
 

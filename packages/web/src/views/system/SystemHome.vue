@@ -1,41 +1,90 @@
 <script setup lang="ts">
-import { selfCheck, checkUpgrade, getAbout } from '@/api/system'
+import { getSelfCheck, getUpgradeInfo, getAbout } from '@/api/system'
+import { t } from '@/i18n'
+
+const loading = ref(true)
 const checks = ref<any[]>([])
 const upgrade = ref<any>(null)
 const about = ref<any>(null)
-onMounted(async () => {
+
+async function fetchData() {
+  loading.value = true
   try {
-    const [c, u, a] = await Promise.all([selfCheck(), checkUpgrade(), getAbout()])
-    checks.value = (c as any).checks; upgrade.value = (u as any); about.value = (a as any)
-  } catch {}
-})
-const statusColor = (s: string) => ({ ok: '#52c41a', warning: '#faad14', error: '#ff4d4f' } as any)[s] || '#999'
+    const [c, u, a] = await Promise.all([getSelfCheck(), getUpgradeInfo(), getAbout()])
+    checks.value = c.checks
+    upgrade.value = u
+    about.value = a
+  } catch { /**/ }
+  loading.value = false
+}
+
+async function handleRefreshSelfCheck() {
+  try { const c = await getSelfCheck(); checks.value = c.checks } catch { /**/ }
+}
+
+const statusIcons: Record<string, string> = {
+  ok: 'i-tabler:circle-check text-green-500',
+  warning: 'i-tabler:alert-triangle text-orange-500',
+  error: 'i-tabler:circle-x text-red-500',
+}
+
+onMounted(fetchData)
 </script>
+
 <template>
-  <div class="max-w-3xl">
-    <h3 class="text-xl font-semibold mb-4">系统</h3>
-    <ACard title="自检" size="small" class="mb-4">
-      <div v-for="c in checks" :key="c.name" class="flex-between py-2 border-b last:border-0 dark:border-gray-700">
-        <div><span class="font-medium">{{ c.name }}</span><div class="text-xs text-gray-400">{{ c.detail }}</div></div>
-        <span :style="{ color: statusColor(c.status), fontSize: '18px' }" :class="`i-tabler:${c.status === 'ok' ? 'circle-check' : c.status === 'warning' ? 'alert-triangle' : 'circle-x'}`" />
-      </div>
-    </ACard>
-    <ACard title="版本更新" size="small" class="mb-4">
-      <template v-if="upgrade">
-        <div class="flex-between"><span>当前版本</span><span class="font-mono">{{ upgrade.currentVersion }}</span></div>
-        <div class="flex-between mt-2"><span>最新版本</span><span class="font-mono text-green-600">{{ upgrade.latestVersion }}</span></div>
-        <AButton v-if="upgrade.updateAvailable" type="primary" size="small" class="mt-3">升级到 {{ upgrade.latestVersion }}</AButton>
-      </template>
-    </ACard>
-    <ACard title="关于" size="small">
-      <template v-if="about">
-        <div class="grid grid-cols-2 gap-2 text-sm">
-          <div class="text-gray-500">应用版本</div><div class="font-mono">{{ about.version }}</div>
-          <div class="text-gray-500">Node.js</div><div>{{ about.node }}</div>
-          <div class="text-gray-500">OpenResty</div><div>{{ about.openresty }}</div>
-          <div class="text-gray-500">平台</div><div>{{ about.platform }} {{ about.arch }}</div>
+  <div>
+    <div class="flex-between mb-4">
+      <h3 class="text-xl font-semibold m-0">{{ t('System') }}</h3>
+      <AButton size="small" @click="fetchData">{{ t('Refresh') }}</AButton>
+    </div>
+
+    <ASpin v-if="loading" class="flex-center w-full py-10" />
+
+    <div v-else class="space-y-6">
+      <!-- Self Check -->
+      <ACard :title="t('Self Check')">
+        <template #extra>
+          <AButton size="small" @click="handleRefreshSelfCheck">{{ t('Refresh') }}</AButton>
+        </template>
+        <div class="space-y-2">
+          <div v-for="check in checks" :key="check.name" class="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800 rounded">
+            <span :class="statusIcons[check.status] || 'i-tabler:question-mark'" class="text-lg" />
+            <div class="flex-1">
+              <div class="font-semibold">{{ check.name }}</div>
+              <div class="text-sm text-gray-500">{{ check.detail }}</div>
+            </div>
+            <ATag :color="check.status === 'ok' ? 'green' : check.status === 'warning' ? 'orange' : 'red'">{{ check.status }}</ATag>
+          </div>
         </div>
-      </template>
-    </ACard>
+      </ACard>
+
+      <!-- Upgrade -->
+      <ACard :title="t('Upgrade')" v-if="upgrade">
+        <div class="flex items-center gap-6">
+          <div>
+            <div class="text-sm text-gray-500">{{ t('Current Version') || 'Current Version' }}</div>
+            <div class="text-xl font-bold">{{ upgrade.currentVersion }}</div>
+          </div>
+          <span class="i-tabler:arrow-right text-2xl text-gray-400" />
+          <div>
+            <div class="text-sm text-gray-500">{{ t('Latest Version') || 'Latest Version' }}</div>
+            <div class="text-xl font-bold">{{ upgrade.latestVersion }}</div>
+          </div>
+          <AButton v-if="upgrade.updateAvailable" type="primary">{{ t('Upgrade') }}</AButton>
+          <ATag v-else color="green">{{ t('Up to date') || 'Up to date' }}</ATag>
+        </div>
+      </ACard>
+
+      <!-- About -->
+      <ACard :title="t('About')" v-if="about">
+        <div class="grid grid-cols-4 gap-4">
+          <div><div class="text-sm text-gray-500">{{ t('Version') || 'Version' }}</div><div class="font-semibold">{{ about.version }}</div></div>
+          <div><div class="text-sm text-gray-500">Node.js</div><div class="font-semibold">{{ about.node }}</div></div>
+          <div><div class="text-sm text-gray-500">OpenResty</div><div class="font-semibold">{{ about.openresty }}</div></div>
+          <div><div class="text-sm text-gray-500">{{ t('Platform') || 'Platform' }}</div><div class="font-semibold">{{ about.platform }} / {{ about.arch }}</div></div>
+        </div>
+        <div class="mt-2 text-sm text-gray-500">{{ t('Build Time') || 'Build Time' }}: {{ about.buildTime }}</div>
+      </ACard>
+    </div>
   </div>
 </template>

@@ -1,0 +1,526 @@
+/* ============================================================================
+   iOS 26 (Liquid Glass) design layer for OpenResty Admin
+   ----------------------------------------------------------------------------
+   Tokens + primitives + antdv surface overrides. Imported once from main.ts,
+   after the antdv reset, so it owns the final look of every view without
+   touching each view individually.
+   ========================================================================= */
+
+:root {
+  /* Surfaces */
+  --bg: #f2f2f7;
+  --group: #ffffff;
+  --group-alt: rgba(120, 120, 128, 0.08);
+  --glass: rgba(255, 255, 255, 0.6);
+  --glass-strong: rgba(255, 255, 255, 0.78);
+  --fill: rgba(120, 120, 128, 0.12);
+  --fill-strong: rgba(120, 120, 128, 0.2);
+
+  /* Text */
+  --label: rgba(0, 0, 0, 0.9);
+  --label-2: rgba(60, 60, 67, 0.62);
+  --label-3: rgba(60, 60, 67, 0.34);
+  --separator: rgba(60, 60, 67, 0.16);
+
+  /* Interactive + state */
+  --tint: #007aff;
+  --tint-soft: rgba(0, 122, 255, 0.12);
+  --ok: #34c759;
+  --warn: #ff9f0a;
+  --bad: #ff3b30;
+
+  /* Concentric radii */
+  --r-rail: 28px;
+  --r-bar: 22px;
+  --r-group: 18px;
+  --r-control: 12px;
+  --r-pill: 999px;
+
+  /* Elevation — only chrome floats */
+  --rim: inset 0 0.5px 0 rgba(255, 255, 255, 0.62);
+  --lift: 0 1px 2px rgba(0, 0, 0, 0.05), 0 14px 34px -14px rgba(0, 0, 0, 0.3);
+  --lift-sm: 0 1px 2px rgba(0, 0, 0, 0.05), 0 6px 18px -10px rgba(0, 0, 0, 0.24);
+
+  /* Motion */
+  --ease-ios: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur: 260ms;
+
+  --font-ui: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+:root.dark {
+  --bg: #000000;
+  --group: #1c1c1e;
+  --group-alt: rgba(120, 120, 128, 0.16);
+  --glass: rgba(28, 28, 30, 0.6);
+  --glass-strong: rgba(28, 28, 30, 0.8);
+  --fill: rgba(120, 120, 128, 0.24);
+  --fill-strong: rgba(120, 120, 128, 0.36);
+
+  --label: rgba(255, 255, 255, 0.92);
+  --label-2: rgba(235, 235, 245, 0.6);
+  --label-3: rgba(235, 235, 245, 0.32);
+  --separator: rgba(84, 84, 88, 0.5);
+
+  --tint: #0a84ff;
+  --tint-soft: rgba(10, 132, 255, 0.2);
+
+  --rim: inset 0 0.5px 0 rgba(255, 255, 255, 0.14);
+  --lift: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 40px -16px rgba(0, 0, 0, 0.7);
+  --lift-sm: 0 1px 2px rgba(0, 0, 0, 0.45), 0 8px 20px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* ---------------------------------------------------------------- substrate */
+
+* { box-sizing: border-box; }
+
+html, body, #app { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--label);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.45;
+  letter-spacing: -0.006em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* The wallpaper exists so the glass has something to refract. Fixed, so it
+   behaves like a desktop background rather than page decoration. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -20vmax;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(38vmax 30vmax at 14% 8%, rgba(0, 122, 255, 0.3), transparent 62%),
+    radial-gradient(42vmax 34vmax at 88% 22%, rgba(88, 86, 214, 0.24), transparent 64%),
+    radial-gradient(46vmax 36vmax at 62% 96%, rgba(48, 176, 199, 0.22), transparent 66%);
+  filter: blur(28px) saturate(115%);
+  transition: opacity var(--dur) var(--ease-ios);
+}
+
+:root.dark body::before { opacity: 0.55; }
+
+#app { position: relative; z-index: 1; }
+
+/* ---------------------------------------------------------------- typography */
+
+.ios-title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.022em;
+  line-height: 1.14;
+  color: var(--label);
+  margin: 0;
+}
+
+.ios-title-2 {
+  font-size: 22px;
+  font-weight: 650;
+  letter-spacing: -0.018em;
+  line-height: 1.24;
+  color: var(--label);
+  margin: 0;
+}
+
+.ios-headline { font-size: 17px; font-weight: 600; letter-spacing: -0.014em; }
+.ios-subhead  { font-size: 15px; font-weight: 400; color: var(--label-2); }
+.ios-footnote { font-size: 13px; font-weight: 400; color: var(--label-2); letter-spacing: 0; }
+.ios-caption  { font-size: 11px; font-weight: 400; color: var(--label-3); letter-spacing: 0.01em; }
+
+/* Section label above a group — sentence case, quiet, never an ALL-CAPS eyebrow. */
+.ios-section-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--label-2);
+  letter-spacing: 0.01em;
+  margin: 0 0 8px 18px;
+}
+
+/* Machine text: ports, paths, directives, log lines, versions. */
+.ios-mono {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------- materials */
+
+.ios-glass {
+  background: var(--glass);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 0.5px solid var(--separator);
+  box-shadow: var(--rim), var(--lift);
+}
+
+.ios-glass-strong {
+  background: var(--glass-strong);
+  backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  border: 0.5px solid var(--separator);
+  box-shadow: var(--rim), var(--lift);
+}
+
+/* Grouped inset surface. Depth comes from grouping, not from a shadow. */
+.ios-group {
+  background: var(--group);
+  border-radius: var(--r-group);
+  border: 0.5px solid var(--separator);
+  overflow: hidden;
+}
+
+.ios-group + .ios-group { margin-top: 22px; }
+
+.ios-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 52px;
+  padding: 11px 16px;
+  color: var(--label);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease-ios), transform 120ms var(--ease-ios);
+}
+
+.ios-row + .ios-row { border-top: 0.5px solid var(--separator); }
+.ios-row:hover { background: var(--group-alt); }
+.ios-row:active { transform: scale(0.985); }
+
+.ios-row-icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--tint-soft);
+  color: var(--tint);
+  font-size: 17px;
+}
+
+.ios-chevron {
+  flex: none;
+  margin-left: auto;
+  color: var(--label-3);
+  font-size: 16px;
+}
+
+/* ---------------------------------------------------------------- controls */
+
+.ios-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: var(--r-pill);
+  background: var(--fill);
+  color: var(--label-2);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.004em;
+  white-space: nowrap;
+}
+
+.ios-chip[data-state='ok']   { background: rgba(52, 199, 89, 0.16);  color: #1f8f3d; }
+.ios-chip[data-state='warn'] { background: rgba(255, 159, 10, 0.18); color: #a8620a; }
+.ios-chip[data-state='bad']  { background: rgba(255, 59, 48, 0.16);  color: #c62a20; }
+:root.dark .ios-chip[data-state='ok']   { color: #4ade80; }
+:root.dark .ios-chip[data-state='warn'] { color: #fbbf24; }
+:root.dark .ios-chip[data-state='bad']  { color: #fb7185; }
+
+.ios-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--label-3);
+  flex: none;
+}
+.ios-dot[data-state='ok']  { background: var(--ok); }
+.ios-dot[data-state='bad'] { background: var(--bad); }
+.ios-dot[data-state='warn']{ background: var(--warn); }
+.ios-dot[data-state='ok'].is-live { animation: ios-pulse 2.4s var(--ease-ios) infinite; }
+
+@keyframes ios-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.5); }
+  60%      { box-shadow: 0 0 0 7px rgba(52, 199, 89, 0); }
+}
+
+/* Instrument strip: hairline-separated readouts, no card per number. */
+.ios-instrument {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-top: 0.5px solid var(--separator);
+  margin-top: 18px;
+}
+
+.ios-instrument > * {
+  flex: 1 1 0;
+  min-width: 96px;
+  padding: 12px 16px 2px;
+  border-left: 0.5px solid var(--separator);
+}
+.ios-instrument > *:first-child { border-left: 0; padding-left: 0; }
+
+@media (max-width: 600px) {
+  .ios-instrument > * { flex: 1 1 45%; min-width: 0; }
+  .ios-instrument > *:nth-child(3) { border-left: 0; }
+  /* the cluster becomes a real 2x2 table, so the second row earns a rule */
+  .ios-instrument > *:nth-child(n + 3) {
+    border-top: 0.5px solid var(--separator);
+    margin-top: 10px;
+    padding-top: 12px;
+  }
+}
+
+.ios-instrument dt {
+  font-size: 11px;
+  color: var(--label-3);
+  margin: 0 0 2px;
+}
+.ios-instrument dd {
+  font-family: var(--font-mono);
+  font-size: 19px;
+  font-variant-numeric: tabular-nums;
+  color: var(--label);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+/* ---------------------------------------------------------------- a11y */
+
+:where(a, button, .ios-row, [tabindex]):focus-visible {
+  outline: 2.5px solid var(--tint);
+  outline-offset: 2px;
+  border-radius: var(--r-control);
+}
+
+/* ---------------------------------------------------------------- scrollbars */
+
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--fill-strong);
+  border-radius: var(--r-pill);
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--label-3); background-clip: content-box; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================================================================
+   antdv surface overrides — surfaces only, so the 40+ existing views inherit
+   the language without being rewritten.
+   ========================================================================= */
+
+/* Layout shells become transparent; the glass chrome supplies the surfaces. */
+.ant-layout,
+.ant-layout-content,
+.ant-layout-header,
+.ant-layout-footer { background: transparent !important; }
+
+.ant-layout-header { height: auto; line-height: normal; padding: 0 !important; }
+.ant-layout-footer { color: var(--label-3); font-size: 13px; background: transparent !important; }
+
+/* Cards: content groups, not floating cards. */
+.ant-card {
+  background: var(--group);
+  border: 0.5px solid var(--separator);
+  border-radius: var(--r-group);
+  box-shadow: none;
+}
+.ant-card-bordered { border-color: var(--separator); }
+.ant-card-head {
+  border-bottom: 0.5px solid var(--separator);
+  min-height: 50px;
+  padding: 0 16px;
+}
+.ant-card-head-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--label);
+  padding: 14px 0;
+}
+.ant-card-extra { padding: 14px 0; }
+.ant-card-body { padding: 16px; }
+.ant-card-hoverable:hover {
+  box-shadow: var(--lift-sm);
+  border-color: var(--separator);
+  transform: translateY(-1px);
+}
+
+/* Tables: one inset group, rows separated by inset hairlines. */
+.ant-table { background: transparent; font-size: 14px; }
+.ant-table-wrapper .ant-table {
+  background: var(--group);
+  border-radius: var(--r-group);
+  border: 0.5px solid var(--separator);
+  overflow: hidden;
+}
+.ant-table-thead > tr > th {
+  background: transparent !important;
+  color: var(--label-2) !important;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0;
+  border-bottom: 0.5px solid var(--separator) !important;
+}
+.ant-table-thead > tr > th::before { display: none !important; }
+.ant-table-tbody > tr > td {
+  border-bottom: 0.5px solid var(--separator) !important;
+  color: var(--label);
+}
+.ant-table-tbody > tr:last-child > td { border-bottom: 0 !important; }
+.ant-table-tbody > tr.ant-table-row:hover > td,
+.ant-table-tbody > tr > td.ant-table-cell-row-hover { background: var(--group-alt) !important; }
+.ant-table-placeholder { background: transparent !important; }
+.ant-pagination { margin-top: 16px; }
+
+/* Buttons: pill controls with press feedback. */
+.ant-btn {
+  border-radius: var(--r-pill);
+  font-weight: 600;
+  letter-spacing: -0.006em;
+  box-shadow: none;
+  transition: transform 120ms var(--ease-ios), background var(--dur) var(--ease-ios), color var(--dur) var(--ease-ios);
+}
+.ant-btn:active { transform: scale(0.96); }
+.ant-btn-default {
+  background: var(--fill);
+  border-color: transparent;
+  color: var(--label);
+}
+.ant-btn-default:not(:disabled):hover {
+  background: var(--fill-strong);
+  border-color: transparent;
+  color: var(--label);
+}
+.ant-btn-primary { background: var(--tint); border-color: transparent; }
+.ant-btn-primary:not(:disabled):hover { background: var(--tint); filter: brightness(1.08); }
+.ant-btn-text { border-radius: var(--r-control); }
+.ant-btn-text:not(:disabled):hover { background: var(--fill); }
+
+/* Inputs and selects. */
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-select .ant-select-selector,
+.ant-picker {
+  background: var(--fill) !important;
+  border-color: transparent !important;
+  border-radius: var(--r-control) !important;
+  color: var(--label);
+  box-shadow: none !important;
+}
+.ant-input::placeholder,
+.ant-select-selection-placeholder { color: var(--label-3) !important; }
+.ant-input-affix-wrapper:focus-within,
+.ant-input:focus,
+.ant-select-focused .ant-select-selector {
+  box-shadow: 0 0 0 3px var(--tint-soft) !important;
+}
+.ant-select-dropdown,
+.ant-picker-dropdown .ant-picker-panel-container {
+  background: var(--glass-strong);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  border: 0.5px solid var(--separator);
+  border-radius: 14px;
+  box-shadow: var(--lift);
+  padding: 4px;
+}
+.ant-select-item-option-selected { background: var(--tint-soft) !important; }
+
+/* Sidebar menu: capsule selection. */
+.ant-menu,
+.ant-menu-light,
+.ant-menu-inline {
+  background: transparent !important;
+  border-inline-end: 0 !important;
+  color: var(--label);
+  font-size: 14px;
+}
+.ant-menu-inline .ant-menu-item,
+.ant-menu-inline .ant-menu-submenu-title {
+  height: 38px;
+  line-height: 38px;
+  margin: 2px 8px;
+  width: calc(100% - 16px);
+  border-radius: var(--r-control);
+  color: var(--label-2);
+  font-weight: 500;
+  transition: background var(--dur) var(--ease-ios), color var(--dur) var(--ease-ios), transform 120ms var(--ease-ios);
+}
+.ant-menu-inline .ant-menu-item:hover,
+.ant-menu-inline .ant-menu-submenu-title:hover { background: var(--fill) !important; color: var(--label); }
+.ant-menu-inline .ant-menu-item:active,
+.ant-menu-inline .ant-menu-submenu-title:active { transform: scale(0.985); }
+/* Only the selected leaf gets the capsule; the owning group is marked with
+   tint alone, so an open group never shows two stacked blue fills. */
+.ant-menu-inline .ant-menu-item-selected {
+  background: var(--tint-soft) !important;
+  color: var(--tint) !important;
+  font-weight: 600;
+}
+.ant-menu-inline .ant-menu-submenu-selected > .ant-menu-submenu-title {
+  background: transparent !important;
+  color: var(--tint) !important;
+  font-weight: 600;
+}
+.ant-menu-inline .ant-menu-submenu-selected > .ant-menu-submenu-title:hover {
+  background: var(--fill) !important;
+}
+.ant-menu-inline .ant-menu-item-selected::after { display: none !important; }
+.ant-menu-sub.ant-menu-inline { background: transparent !important; }
+.ant-menu-inline .ant-menu-sub .ant-menu-item { font-size: 13px; height: 34px; line-height: 34px; }
+
+/* Tags read as iOS capsules. */
+.ant-tag {
+  border-radius: var(--r-pill);
+  border-color: transparent;
+  font-size: 12px;
+  font-weight: 600;
+  padding-inline: 9px;
+  line-height: 20px;
+}
+
+/* Overlays: sheets and dialogs use the strong glass. */
+.ant-drawer-content,
+.ant-modal-content {
+  background: var(--glass-strong);
+  backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  border: 0.5px solid var(--separator);
+  color: var(--label);
+}
+.ant-drawer-content { border-radius: 0 var(--r-rail) var(--r-rail) 0; }
+.ant-modal-content { border-radius: var(--r-bar); box-shadow: var(--lift); }
+.ant-modal-mask, .ant-drawer-mask { background: rgba(0, 0, 0, 0.28) !important; }
+.ant-modal-header, .ant-drawer-header { background: transparent; border-bottom: 0.5px solid var(--separator); }
+
+/* Breadcrumb + misc chrome. */
+.ant-breadcrumb { font-size: 13px; }
+.ant-breadcrumb a, .ant-breadcrumb li:last-child { color: var(--label-2); }
+.ant-breadcrumb li:last-child { color: var(--label); font-weight: 600; }
+.ant-spin-dot-item { background-color: var(--tint) !important; }
+.ant-empty-description { color: var(--label-3); }
+.ant-divider { border-color: var(--separator); }
+.ant-progress-text { color: var(--label-2) !important; }

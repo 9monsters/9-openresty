@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { listConfig, readConfig, updateConfig, deleteConfig, createConfig } from '@/api/config'
-import { testConfig, reloadNginx } from '@/api/nginx'
+import { testConfig } from '@/api/nginx'
+import { t } from '@/i18n'
 import type { ConfigFile } from '@/types'
 
 const files = ref<ConfigFile[]>([])
@@ -60,7 +61,7 @@ async function selectFile(f: { path: string }) {
     content.value = res.content
     originalContent.value = res.content
   } catch (e) {
-    AMessage.error('读取文件失败')
+    message.error('读取文件失败')
   }
 }
 
@@ -70,9 +71,9 @@ async function handleSave() {
   try {
     await updateConfig(selectedFile.value, content.value)
     originalContent.value = content.value
-    AMessage.success('文件已保存')
+    message.success(t('Published and reloaded'))
   } catch (e: any) {
-    AMessage.error(e.message)
+    message.error(e.message)
   } finally {
     saving.value = false
   }
@@ -84,10 +85,10 @@ async function handleDelete() {
     await deleteConfig(selectedFile.value)
     selectedFile.value = ''
     content.value = ''
-    AMessage.success('文件已删除')
+    message.success(t('Published and reloaded'))
     await fetchFiles()
   } catch (e: any) {
-    AMessage.error(e.message)
+    message.error(e.message)
   }
 }
 
@@ -98,10 +99,10 @@ async function handleCreate() {
     await createConfig({ path, content: '# New Config\n', overwrite: false })
     showNewFile.value = false
     newFileName.value = ''
-    AMessage.success('文件已创建')
+    message.success(t('Published and reloaded'))
     await fetchFiles()
   } catch (e: any) {
-    AMessage.error(e.message)
+    message.error(e.message)
   }
 }
 
@@ -109,27 +110,15 @@ async function handleTest() {
   try {
     const result = await testConfig()
     if (result.ok) {
-      AMessage.success('配置测试通过！')
+      message.success('配置测试通过！')
     } else {
-      AMessage.warning(result.output)
+      message.warning(result.output)
     }
   } catch (e: any) {
-    AMessage.error(e.message)
+    message.error(e.message)
   }
 }
 
-async function handleReload() {
-  try {
-    const result = await reloadNginx()
-    if (result.ok) {
-      AMessage.success('Nginx 已重载')
-    } else {
-      AMessage.warning(result.output)
-    }
-  } catch (e: any) {
-    AMessage.error(e.message)
-  }
-}
 
 const isModified = computed(() => content.value !== originalContent.value)
 
@@ -200,11 +189,8 @@ onMounted(fetchFiles)
             <AButton size="small" @click="handleTest">
               <span class="i-tabler:test-pipe mr-1" /> 测试配置
             </AButton>
-            <AButton size="small" type="primary" @click="handleReload">
-              <span class="i-tabler:refresh mr-1" /> 重载 Nginx
-            </AButton>
             <AButton size="small" :danger="isModified" type="primary" @click="handleSave" :loading="saving">
-              <span class="i-tabler:device-floppy mr-1" /> 保存
+              <span class="i-tabler:device-floppy mr-1" /> {{ t('Save and publish') }}
             </AButton>
             <AButton size="small" danger @click="handleDelete">
               <span class="i-tabler:trash" />

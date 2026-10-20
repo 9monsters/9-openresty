@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm --parallel -r dev",
-    "dev:server": "pnpm --filter @openresty-admin/server dev",
-    "dev:web": "pnpm --filter @openresty-admin/web dev",
-    "build": "pnpm -r build",
-    "lint": "pnpm -r lint"
+    "dev": "pnpm --filter @openresty-admin/web dev",
+    "build": "pnpm --filter @openresty-admin/web build && ./scripts/copy-web-dist.sh && go build -o bin/openresty-admin ./cmd/openresty-admin/",
+    "build:go": "go build -o bin/openresty-admin ./cmd/openresty-admin/",
+    "test": "go test ./internal/...",
+    "vet": "go vet ./..."
   }
 }

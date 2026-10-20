@@ -1,44 +1,65 @@
-# Dependencies
+# === Dependencies ===
 node_modules/
 .pnpm-store/
+docs/node_modules/
 
-# Build output
+# === Build output ===
+bin/
 dist/
-.vite/
 *.tsbuildinfo
+internal/embedweb/dist/
+packages/web/dist/
+docs/.vitepress/dist/
+docs/.vitepress/cache/
 
-# IDE
+# === Go ===
+openresty-admin
+openresty-agent
+*.exe
+__debug_bin*
+go.work
+go.work.sum
+
+# === Data ===
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# === IDE ===
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Logs
+# === Logs ===
 *.log
 npm-debug.log*
 pnpm-debug.log*
 
-# Environment
+# === Environment ===
 .env
 .env.local
 .env.*.local
 
-# Cache
+# === Cache ===
 .cache/
-*.tsbuildinfo
 eslintcache
+.archify/
+.codex/
+.claude/
 
-# Auto-generated
+# === Auto-generated ===
 auto-imports.d.ts
 components.d.ts
 
-# Test
+# === Test ===
 coverage/
 
-# Misc
+# === Misc ===
 *.tgz
+*.bak

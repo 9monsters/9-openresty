@@ -34,9 +34,9 @@ async function handleSave() {
   saving.value = true
   try {
     await updateSettings(settings)
-    AMessage.success('设置已保存')
+    message.success('设置已保存')
   } catch (e: any) {
-    AMessage.error(e.message)
+    message.error(e.message)
   } finally {
     saving.value = false
   }
@@ -45,18 +45,18 @@ async function handleSave() {
 async function handleReload() {
   try {
     const r = await reloadNginx()
-    AMessage.success(r.ok ? '重载成功' : r.output)
+    message.success(r.ok ? '重载成功' : r.output)
   } catch (e: any) {
-    AMessage.error(e.message)
+    message.error(e.message)
   }
 }
 
 async function handleTest() {
   try {
     const r = await testConfig()
-    AMessage.info(r.ok ? '✅ 配置测试通过' : '❌ ' + r.output)
+    message.info(r.ok ? '✅ 配置测试通过' : '❌ ' + r.output)
   } catch (e: any) {
-    AMessage.error(e.message)
+    message.error(e.message)
   }
 }
 </script>

@@ -1,0 +1,21 @@
+{
+  "_comment": "OpenResty Admin configuration file. All fields are optional.",
+  "host": "127.0.0.1",
+  "port": 3000,
+  "dataDir": "./data",
+  "database": {
+    "dsn": "postgres://openresty:1aac%40Openresty@192.168.5.100:5432/openresty?sslmode=disable"
+  },
+  "paths": {
+    "nginxBin": "/usr/local/opt/openresty/bin/openresty",
+    "nginxConfDir": "/usr/local/etc/openresty",
+    "nginxConfPath": "/usr/local/etc/openresty/nginx.conf",
+    "nginxLogDir": "/usr/local/var/log/nginx",
+    "nginxPIDPath": "/usr/local/var/run/openresty.pid"
+  },
+  "hub": {
+    "grpcAddr": ":9090",
+    "certFile": "",
+    "keyFile": ""
+  }
+}

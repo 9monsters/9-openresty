@@ -66,10 +66,10 @@ async function handleSubmit() {
         })),
       })
     }
-    AMessage.success(isEdit.value ? '站点已更新' : '站点已创建')
+    message.success(isEdit.value ? '站点已更新' : '站点已创建')
     router.push('/sites')
   } catch (e: any) {
-    AMessage.error(e.message || '操作失败')
+    message.error(e.message || '操作失败')
   } finally {
     loading.value = false
   }
