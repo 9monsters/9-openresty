@@ -5,7 +5,7 @@ export default defineConfig({
   description: 'Web-based single-machine OpenResty/NGINX management platform',
   lang: 'zh-CN',
   lastUpdated: true,
-  base: '/openresty-admin/',
+  base: '/9-openresty/',
 
   themeConfig: {
     logo: '/logo.svg',
