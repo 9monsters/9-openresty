@@ -1,0 +1,16 @@
+# The docs site is a standalone project.
+#
+# Without this file pnpm walks up and finds the repository-root pnpm-workspace.yaml.
+# Because "docs" is not one of that workspace's projects, pnpm reports
+# "No projects found" and installs nothing — yet still exits 0, so the build then
+# fails with "vitepress: not found". Declaring docs as its own workspace root
+# makes dependency installation deterministic in every pnpm version.
+packages:
+  - '.'
+
+# esbuild ships a postinstall script; newer pnpm versions block build scripts by
+# default. Older versions ignore this field.
+allowBuilds:
+  esbuild: true
+onlyBuiltDependencies:
+  - esbuild
