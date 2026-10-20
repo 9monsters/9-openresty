@@ -21,7 +21,7 @@
     "splitpanes": "^3.1.0",
     "@xterm/xterm": "^5.5.0",
     "@xterm/addon-fit": "^0.10.0",
-    "echarts": "^5.5.0",
+    "echarts": "^6.1.0",
     "vue-echarts": "^7.0.0"
   },
   "devDependencies": {
