@@ -3,7 +3,7 @@
 ## 开发
 
 ```bash
-pnpm --filter @openresty-admin/web dev
+pnpm --dir packages/web dev
 # Vite HMR on http://localhost:3001
 # API proxy → http://localhost:3000
 ```
@@ -11,19 +11,14 @@ pnpm --filter @openresty-admin/web dev
 ## 生产构建
 
 ```bash
-pnpm --filter @openresty-admin/web build
+pnpm --dir packages/web build
 ```
 
-产物在 `packages/web/dist/`，包含 `index.html` + `assets/` 目录（约 2.1MB）。
+默认产物输出到 `internal/embedweb/dist/`；设置 `STANDALONE=true` 时输出到 `packages/web/dist/`，供独立部署。
 
 ## 嵌入 Go 二进制
 
-```bash
-bash scripts/copy-web-dist.sh
-go build -o bin/openresty-admin ./cmd/openresty-admin/
-```
-
-`scripts/copy-web-dist.sh` 将 `packages/web/dist/` 复制到 `internal/embedweb/dist/`，Go 编译时通过 `//go:embed dist` 嵌入二进制。
+Vite 默认将产物直接写入 `internal/embedweb/dist/`，`go build` 通过 `//go:embed dist` 嵌入，无需额外拷贝步骤。
 
 ## 技术栈
 

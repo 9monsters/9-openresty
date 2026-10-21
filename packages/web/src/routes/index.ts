@@ -2,7 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 import {
   dashboardRoutes, sitesRoutes, streamsRoutes, upstreamRoutes,
-  configRoutes, certificatesRoutes, logRoutes, terminalRoutes,
+  configRoutes, certificatesRoutes, logRoutes,
   luaRoutes, dnsRoutes, accessListRoutes, namespaceRoutes,
   nodeRoutes, notificationRoutes, backupRoutes, systemRoutes,
   userRoutes, settingsRoutes,
@@ -34,7 +34,6 @@ export const routes: RouteRecordRaw[] = [
       ...configRoutes,
       ...certificatesRoutes,
       ...logRoutes,
-      ...terminalRoutes,
       ...luaRoutes,
       ...dnsRoutes,
       ...namespaceRoutes,

@@ -106,10 +106,6 @@ export const logRoutes: RouteRecordRaw[] = [
   },
 ]
 
-export const terminalRoutes: RouteRecordRaw[] = [
-  { path: 'terminal', name: 'Terminal', component: () => import('@/views/terminal/Terminal.vue'), meta: { name: 'Terminal', icon: CodeOutlined } },
-]
-
 // OpenResty-specific
 export const luaRoutes: RouteRecordRaw[] = [
   { path: 'lua', name: 'Lua Manager', component: () => import('@/views/lua/LuaManager.vue'), meta: { name: 'Lua Manager', icon: StarOutlined } },

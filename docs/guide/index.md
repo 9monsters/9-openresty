@@ -22,8 +22,7 @@ CREATE DATABASE openresty OWNER openresty;
 SQL
 
 # 2. 构建（含前端）
-pnpm --filter @openresty-admin/web build
-bash scripts/copy-web-dist.sh
+pnpm --dir packages/web build
 go build -o bin/openresty-admin ./cmd/openresty-admin/
 
 # 3. 启动

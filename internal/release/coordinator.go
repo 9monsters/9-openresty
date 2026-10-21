@@ -17,17 +17,31 @@ import (
 	"openresty-admin/internal/nginx"
 )
 
+// Host is the subset of the nginx Host Adapter the coordinator needs.
+// *nginx.Host satisfies this interface; tests inject a fake.
+type Host interface {
+	ReadForRelease(rel string) (string, bool, error)
+	WriteConfig(rel, content string) error
+	DeleteConfig(rel string) error
+	Test() (bool, string)
+	Reload() (bool, string)
+}
+
 // Coordinator serialises all configuration changes through a single state machine.
 // Only one release can be in flight at a time (process-level mutex).
 type Coordinator struct {
 	mu   sync.Mutex
-	host *nginx.Host
+	host Host
 	db   *gorm.DB
+	// probe runs the post-reload health check; overridable in tests.
+	probe func([]ReleaseFile) bool
 }
 
 // New creates a Coordinator.
-func New(host *nginx.Host, db *gorm.DB) *Coordinator {
-	return &Coordinator{host: host, db: db}
+func New(host Host, db *gorm.DB) *Coordinator {
+	c := &Coordinator{host: host, db: db}
+	c.probe = c.healthCheck
+	return c
 }
 
 // IsLocked reports whether a release is currently in progress.
@@ -147,7 +161,7 @@ func (c *Coordinator) Publish(changes []nginx.Change, source string) (*model.Con
 
 	// --- 5. Health check ---
 	c.setStatus(release, "health_checking")
-	if !c.healthCheck(files) {
+	if !c.probe(files) {
 		restored := c.restoreSnapshots(snapshots)
 		if !restored {
 			return c.recoveryRequired(release, "health check failed and snapshot restore failed")
