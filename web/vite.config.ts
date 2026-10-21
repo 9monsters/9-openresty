@@ -7,10 +7,10 @@ import { AntdvNextResolver } from '@antdv-next/auto-import-resolver'
 import { defineConfig } from 'vite'
 import { resolve } from 'node:path'
 
-// Build mode: STANDALONE=true builds to packages/web/dist for independent deployment.
+// Build mode: STANDALONE=true builds to dist/ for independent deployment.
 // Default builds directly into the Go embed directory.
 const isStandalone = process.env.STANDALONE === 'true'
-const embedOutDir = resolve(__dirname, '../../internal/embedweb/dist')
+const embedOutDir = resolve(__dirname, '../internal/embedweb/dist')
 const standaloneOutDir = resolve(__dirname, 'dist')
 
 export default defineConfig({

@@ -3,7 +3,7 @@
 ## 开发
 
 ```bash
-pnpm --dir packages/web dev
+pnpm --dir web dev
 # Vite HMR on http://localhost:3001
 # API proxy → http://localhost:3000
 ```
@@ -11,10 +11,10 @@ pnpm --dir packages/web dev
 ## 生产构建
 
 ```bash
-pnpm --dir packages/web build
+pnpm --dir web build
 ```
 
-默认产物输出到 `internal/embedweb/dist/`；设置 `STANDALONE=true` 时输出到 `packages/web/dist/`，供独立部署。
+默认产物输出到 `internal/embedweb/dist/`；设置 `STANDALONE=true` 时输出到 `web/dist/`，供独立部署。
 
 ## 嵌入 Go 二进制
 

@@ -4,7 +4,7 @@
 
 ```bash
 # 1. 构建前端（Vite 直接输出到 internal/embedweb/dist）
-pnpm --dir packages/web build
+pnpm --dir web build
 
 # 2. 编译 Go 二进制
 go build -o bin/openresty-admin ./cmd/openresty-admin/

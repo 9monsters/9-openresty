@@ -22,7 +22,7 @@ CREATE DATABASE openresty OWNER openresty;
 SQL
 
 # 2. 构建（含前端）
-pnpm --dir packages/web build
+pnpm --dir web build
 go build -o bin/openresty-admin ./cmd/openresty-admin/
 
 # 3. 启动

@@ -6,7 +6,7 @@ Web-based OpenResty/NGINX management interface: Go backend (cobra CLI + embedded
 
 - **Backend**: Go with cobra CLI, serves on port 3000 by default. Single binary ships the
   embedded Vue 3 frontend — no separate Node server at runtime.
-- **Frontend**: Vue 3 + Vite + antdv-next + UnoCSS + Pinia in `packages/web` (a standalone
+- **Frontend**: Vue 3 + Vite + antdv-next + UnoCSS + Pinia in `web` (a standalone
   package, no monorepo workspace). Build with `pnpm build` — Vite outputs directly into
   `internal/embedweb/dist`, which `go build` embeds.
 - **CLI**: `cmd/openresty-admin/main.go` — cobra root, `cmd/openresty-admin/server.go` —
@@ -18,19 +18,19 @@ Web-based OpenResty/NGINX management interface: Go backend (cobra CLI + embedded
   - `internal/store/` — SQLite persistence matching the Node schema.
   - `internal/release/` — config change coordinator (snapshot → write → test → reload).
   - `internal/api/` — HTTP handlers, one file per domain + `server.go` wiring.
-  - `internal/embedweb/` — embeds `packages/web/dist` and serves it with SPA fallback.
+  - `internal/embedweb/` — embeds `web/dist` and serves it with SPA fallback.
 - **Node dev mode**: `pnpm dev` still runs the Vue frontend with Vite dev server (HMR) and
   proxies `/api` to 3000. The Go binary can run alongside for API development.
-- **Build**: `pnpm --dir packages/web build` writes the frontend dist into `internal/embedweb/dist`, then `go build -o bin/openresty-admin ./cmd/openresty-admin/` embeds it. The resulting binary is self-contained.
+- **Build**: `pnpm --dir web build` writes the frontend dist into `internal/embedweb/dist`, then `go build -o bin/openresty-admin ./cmd/openresty-admin/` embeds it. The resulting binary is self-contained.
 
 ## Commands
 
 | Purpose | Command |
 | --- | --- |
-| Dev web only | `pnpm --dir packages/web dev` |
-| Build web dist | `pnpm --dir packages/web build` |
+| Dev web only | `pnpm --dir web dev` |
+| Build web dist | `pnpm --dir web build` |
 | Build Go binary | `go build -o bin/openresty-admin ./cmd/openresty-admin/` |
-| Build all | `pnpm --dir packages/web build && go build -o bin/openresty-admin ./cmd/openresty-admin/` |
+| Build all | `pnpm --dir web build && go build -o bin/openresty-admin ./cmd/openresty-admin/` |
 | Go tests | `go test ./internal/...` |
 | Go vet | `go vet ./...` |
 
@@ -112,7 +112,7 @@ Backend — Go
 - `internal/api/sysinfo.go` — platform-specific system metrics (mem, cpu, uptime, load).
 - `internal/embedweb/embed.go` — embeds `internal/embedweb/dist` (built by Vite) and serves it with SPA fallback.
 
-Frontend — `packages/web/src/`
+Frontend — `web/src/`
 - `routes/modules/<domain>.ts` — one file per route group, imported in `routes/index.ts`.
 - `views/<domain>/` — Vue SFC with `<script setup lang="ts">`.
 - `api/<domain>.ts` — typed wrappers over `api.get/post/put/delete`.
@@ -135,11 +135,11 @@ Frontend — `packages/web/src/`
   synchronous. Legacy `<name>.json` collections are imported once on first open, marked in the
   `meta` table, and left on disk as a backup — never re-imported after that. Override the data
   directory with `OPENRESTY_ADMIN_DATA_DIR`.
-- `strict` is enabled in `packages/web/tsconfig.json`.
+- `strict` is enabled in `web/tsconfig.json`.
 
 ## Frontend design language
 
-`packages/web` uses an **iOS 26 / Liquid Glass** visual language. It is centralized, not per-view:
+`web` uses an **iOS 26 / Liquid Glass** visual language. It is centralized, not per-view:
 
 - `src/styles/ios26.css` owns the tokens (`--bg`, `--glass`, `--group`, `--tint`, `--label-*`,
   the concentric radius scale), the material/typography primitives (`.ios-glass`, `.ios-group`,

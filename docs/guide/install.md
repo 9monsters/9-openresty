@@ -31,7 +31,7 @@ export SQLITE_PATH=data/openresty-admin.db
 ### 2. 构建
 
 ```bash
-pnpm --dir packages/web build
+pnpm --dir web build
 go build -o bin/openresty-admin ./cmd/openresty-admin/
 ```
 
@@ -59,14 +59,14 @@ JWT_SIGNING_KEY=my-secret-key ./bin/openresty-admin --port 3000
 ./bin/openresty-admin --port 3000 --frontend-mode=external
 
 # 终端2：启动 Vue 开发服务器
-pnpm --dir packages/web dev
+pnpm --dir web dev
 ```
 
 ## 独立前端部署
 
 ```bash
-STANDALONE=true pnpm --dir packages/web build
-# 产出在 packages/web/dist/
+STANDALONE=true pnpm --dir web build
+# 产出在 web/dist/
 ```
 
 ## 下一步
